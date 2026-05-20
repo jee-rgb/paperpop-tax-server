@@ -299,28 +299,15 @@ def export_excel():
         import openpyxl
         import io
         from flask import send_file
-        import subprocess, os
+        from datetime import date
 
         data     = request.json
         entries  = data.get("entries", [])
         supplier = data.get("supplier", {})
 
-        xls_path  = os.path.join(os.path.dirname(__file__), "세금계산서등록양식_일반_.xls")
-        xlsx_path = "/tmp/세금계산서등록양식_작업.xlsx"
-
-        # xls → xlsx 변환
-        subprocess.run(
-            ["libreoffice", "--headless", "--convert-to", "xlsx", xls_path, "--outdir", "/tmp"],
-            capture_output=True
-        )
-        converted = "/tmp/세금계산서등록양식_일반_.xlsx"
-        if os.path.exists(converted):
-            import shutil
-            shutil.copy(converted, xlsx_path)
-        else:
-            return jsonify({"ok": False, "error": "양식 변환 실패"}), 500
-
-        wb = openpyxl.load_workbook(xlsx_path)
+        # 원본 xlsx 템플릿 직접 로드 (LibreOffice 불필요)
+        tmpl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "세금계산서등록양식_일반_.xlsx")
+        wb = openpyxl.load_workbook(tmpl_path)
         ws = wb["엑셀업로드양식"]
 
         for i, e in enumerate(entries):
@@ -328,11 +315,15 @@ def export_excel():
             its = (e.get("items") or []) + [{}] * 4
             its = its[:4]
 
+            def to_num(v):
+                try: return int(str(v).replace(",","").strip()) if v else None
+                except: return str(v) if v else None
+
             vals = [
                 "01",
                 e.get("issue_date", ""),
                 supplier.get("reg", ""),
-                "",
+                None,
                 supplier.get("name", ""),
                 supplier.get("ceo", ""),
                 supplier.get("addr", ""),
@@ -340,34 +331,33 @@ def export_excel():
                 supplier.get("item", ""),
                 supplier.get("email", ""),
                 e.get("buyer_reg", ""),
-                "",
+                None,
                 e.get("buyer_name", ""),
                 e.get("buyer_ceo", ""),
                 e.get("buyer_addr", ""),
                 e.get("buyer_biz", ""),
                 e.get("buyer_item", ""),
                 e.get("buyer_email", ""),
-                "",
-                e.get("total_supply", ""),
-                e.get("total_tax", ""),
+                None,
+                to_num(e.get("total_supply")),
+                to_num(e.get("total_tax")),
                 e.get("note", ""),
-                its[0].get("day",""), its[0].get("name",""), its[0].get("spec",""), its[0].get("qty",""), its[0].get("price",""), its[0].get("supply",""), its[0].get("tax",""), "",
-                its[1].get("day",""), its[1].get("name",""), its[1].get("spec",""), its[1].get("qty",""), its[1].get("price",""), its[1].get("supply",""), its[1].get("tax",""), "",
-                its[2].get("day",""), its[2].get("name",""), its[2].get("spec",""), its[2].get("qty",""), its[2].get("price",""), its[2].get("supply",""), its[2].get("tax",""), "",
-                its[3].get("day",""), its[3].get("name",""), its[3].get("spec",""), its[3].get("qty",""), its[3].get("price",""), its[3].get("supply",""), its[3].get("tax",""), "",
-                "", "", "", "",
+                its[0].get("day",""), its[0].get("name",""), its[0].get("spec",""), to_num(its[0].get("qty")), to_num(its[0].get("price")), to_num(its[0].get("supply")), to_num(its[0].get("tax")), None,
+                its[1].get("day",""), its[1].get("name",""), its[1].get("spec",""), to_num(its[1].get("qty")), to_num(its[1].get("price")), to_num(its[1].get("supply")), to_num(its[1].get("tax")), None,
+                its[2].get("day",""), its[2].get("name",""), its[2].get("spec",""), to_num(its[2].get("qty")), to_num(its[2].get("price")), to_num(its[2].get("supply")), to_num(its[2].get("tax")), None,
+                its[3].get("day",""), its[3].get("name",""), its[3].get("spec",""), to_num(its[3].get("qty")), to_num(its[3].get("price")), to_num(its[3].get("supply")), to_num(its[3].get("tax")), None,
+                None, None, None, None,
                 e.get("receipt", "02"),
             ]
 
             for col, val in enumerate(vals, start=1):
-                if val not in (None, ""):
+                if val is not None and val != "":
                     ws.cell(row=row, column=col, value=val)
 
         out = io.BytesIO()
         wb.save(out)
         out.seek(0)
 
-        from datetime import date
         fname = f"세금계산서_{date.today().strftime('%Y%m%d')}_{len(entries)}건.xlsx"
         return send_file(out, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                          as_attachment=True, download_name=fname)
