@@ -292,11 +292,12 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
 
 
-# ── 국세청 원본 양식에 데이터 채워서 다운로드 ──────────
+# ── 국세청 양식 코드로 직접 생성 ─────────────────────
 @app.route("/export-excel", methods=["POST"])
 def export_excel():
     try:
         import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
         import io
         from flask import send_file
         from datetime import date
@@ -305,54 +306,87 @@ def export_excel():
         entries  = data.get("entries", [])
         supplier = data.get("supplier", {})
 
-        # 원본 xlsx 템플릿 직접 로드 (LibreOffice 불필요)
-        tmpl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "세금계산서등록양식_일반_.xlsx")
-        wb = openpyxl.load_workbook(tmpl_path)
-        ws = wb["엑셀업로드양식"]
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "엑셀업로드양식"
 
+        def to_num(v):
+            try: return int(str(v).replace(",","").strip()) if v else None
+            except: return str(v) if v else None
+
+        # 헤더 (6행)
+        headers = [
+            '전자(세금)계산서 종류
+(01:일반, 02:영세율)', '작성일자',
+            '공급자 등록번호
+("-" 없이 입력)', '공급자
+ 종사업장번호',
+            '공급자 상호', '공급자 성명', '공급자 사업장주소', '공급자 업태', '공급자 종목', '공급자 이메일',
+            '공급받는자 등록번호
+("-" 없이 입력)', '공급받는자 
+종사업장번호',
+            '공급받는자 상호 ', '공급받는자 성명', '공급받는자 사업장주소',
+            '공급받는자 업태', '공급받는자 종목', '공급받는자 이메일1', '공급받는자 이메일2',
+            '공급가액
+합계', '세액
+합계', '비고',
+            '일자1
+(2자리, 작성년월 제외)', '품목1', '규격1', '수량1', '단가1', '공급가액1', '세액1', '품목비고1',
+            '일자2
+(2자리, 작성년월 제외)', '품목2', '규격2', '수량2', '단가2', '공급가액2', '세액2', '품목비고2',
+            '일자3
+(2자리, 작성년월 제외)', '품목3', '규격3', '수량3', '단가3', '공급가액3', '세액3', '품목비고3',
+            '일자4
+(2자리, 작성년월 제외)', '품목4', '규격4', '수량4', '단가4', '공급가액4', '세액4', '품목비고4',
+            '현금', '수표', '어음', '외상미수금', '영수(01),
+청구(02)'
+        ]
+
+        # 헤더 스타일
+        header_fill = PatternFill("solid", fgColor="FFA500")
+        header_font = Font(bold=True, size=9)
+        for col, h in enumerate(headers, 1):
+            cell = ws.cell(row=6, column=col, value=h)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(wrap_text=True, horizontal='center', vertical='center')
+
+        ws.row_dimensions[6].height = 40
+
+        # 데이터 (7행~)
         for i, e in enumerate(entries):
             row = 7 + i
             its = (e.get("items") or []) + [{}] * 4
             its = its[:4]
 
-            def to_num(v):
-                try: return int(str(v).replace(",","").strip()) if v else None
-                except: return str(v) if v else None
-
             vals = [
-                "01",
-                e.get("issue_date", ""),
-                supplier.get("reg", ""),
-                None,
-                supplier.get("name", ""),
-                supplier.get("ceo", ""),
-                supplier.get("addr", ""),
-                supplier.get("biz", ""),
-                supplier.get("item", ""),
-                supplier.get("email", ""),
-                e.get("buyer_reg", ""),
-                None,
-                e.get("buyer_name", ""),
-                e.get("buyer_ceo", ""),
-                e.get("buyer_addr", ""),
-                e.get("buyer_biz", ""),
-                e.get("buyer_item", ""),
-                e.get("buyer_email", ""),
-                None,
-                to_num(e.get("total_supply")),
-                to_num(e.get("total_tax")),
-                e.get("note", ""),
+                "01", e.get("issue_date",""),
+                supplier.get("reg",""), None,
+                supplier.get("name",""), supplier.get("ceo",""),
+                supplier.get("addr",""), supplier.get("biz",""),
+                supplier.get("item",""), supplier.get("email",""),
+                e.get("buyer_reg",""), None,
+                e.get("buyer_name",""), e.get("buyer_ceo",""),
+                e.get("buyer_addr",""), e.get("buyer_biz",""),
+                e.get("buyer_item",""), e.get("buyer_email",""), None,
+                to_num(e.get("total_supply")), to_num(e.get("total_tax")),
+                e.get("note",""),
                 its[0].get("day",""), its[0].get("name",""), its[0].get("spec",""), to_num(its[0].get("qty")), to_num(its[0].get("price")), to_num(its[0].get("supply")), to_num(its[0].get("tax")), None,
                 its[1].get("day",""), its[1].get("name",""), its[1].get("spec",""), to_num(its[1].get("qty")), to_num(its[1].get("price")), to_num(its[1].get("supply")), to_num(its[1].get("tax")), None,
                 its[2].get("day",""), its[2].get("name",""), its[2].get("spec",""), to_num(its[2].get("qty")), to_num(its[2].get("price")), to_num(its[2].get("supply")), to_num(its[2].get("tax")), None,
                 its[3].get("day",""), its[3].get("name",""), its[3].get("spec",""), to_num(its[3].get("qty")), to_num(its[3].get("price")), to_num(its[3].get("supply")), to_num(its[3].get("tax")), None,
                 None, None, None, None,
-                e.get("receipt", "02"),
+                e.get("receipt","02"),
             ]
 
-            for col, val in enumerate(vals, start=1):
+            for col, val in enumerate(vals, 1):
                 if val is not None and val != "":
                     ws.cell(row=row, column=col, value=val)
+
+        # 컬럼 너비
+        col_widths = [8,12,16,8,16,10,30,12,16,20,16,8,16,10,30,12,16,20,20,12,10,12] + [6,16,8,6,10,10,8,8]*4 + [8,8,8,10,8]
+        for i, w in enumerate(col_widths, 1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
 
         out = io.BytesIO()
         wb.save(out)
