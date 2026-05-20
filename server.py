@@ -1,24 +1,43 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import anthropic
-import base64
 import os
+import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.')
 CORS(app)
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
+DATA_FILE = "queue.json"
+
+def load_queue():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def save_queue(queue):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(queue, f, ensure_ascii=False, indent=2)
+
+# ── Static files ──────────────────────────────────────
+@app.route("/")
+def index():
+    return send_from_directory(".", "index.html")
+
+# ── Health ────────────────────────────────────────────
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
 
+# ── AI Extract ────────────────────────────────────────
 @app.route("/extract", methods=["POST"])
 def extract():
     try:
         data = request.json
-        biz_b64 = data.get("biz_b64")
-        biz_mt  = data.get("biz_mt", "image/jpeg")
+        biz_b64  = data.get("biz_b64")
+        biz_mt   = data.get("biz_mt", "image/jpeg")
         quote_b64 = data.get("quote_b64")
         quote_mt  = data.get("quote_mt", "image/jpeg")
 
@@ -30,46 +49,51 @@ def extract():
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=1000,
-            messages=[{
-                "role": "user",
-                "content": [
-                    make_block(biz_b64, biz_mt),
-                    make_block(quote_b64, quote_mt),
-                    {
-                        "type": "text",
-                        "text": """첫 번째 문서는 공급받는자(거래처)의 사업자등록증 또는 고유번호증이고,
-두 번째 문서는 견적서입니다.
-세금계산서 발행에 필요한 정보를 추출해주세요.
-
-반드시 아래 JSON만 출력하세요 (다른 텍스트 없이):
-{
-  "buyer_reg": "사업자등록번호 또는 고유번호(하이픈 없이)",
-  "buyer_name": "상호 또는 기관명",
-  "buyer_ceo": "대표자 또는 기관장 성명",
-  "buyer_addr": "사업장 또는 기관 주소",
-  "buyer_biz": "업태",
-  "buyer_item": "종목",
-  "buyer_email": "",
-  "issue_date": "견적서 작성일자 YYYYMMDD",
-  "total_supply": "공급가액 합계 숫자만",
-  "total_tax": "세액 합계 숫자만",
-  "items": [
-    { "day": "일자 DD 2자리", "name": "품목명", "spec": "규격", "qty": "수량", "price": "단가", "supply": "공급가액", "tax": "세액" }
-  ]
-}
-알 수 없는 값은 빈 문자열. items 최대 4개."""
-                    }
-                ]
-            }]
+            messages=[{"role": "user", "content": [
+                make_block(biz_b64, biz_mt),
+                make_block(quote_b64, quote_mt),
+                {"type": "text", "text": """첫 번째 문서는 공급받는자의 사업자등록증 또는 고유번호증, 두 번째는 견적서입니다.
+JSON만 출력하세요:
+{"buyer_reg":"","buyer_name":"","buyer_ceo":"","buyer_addr":"","buyer_biz":"","buyer_item":"","buyer_email":"","issue_date":"YYYYMMDD","total_supply":"숫자만","total_tax":"숫자만","items":[{"day":"DD","name":"","spec":"","qty":"","price":"","supply":"","tax":""}]}
+모르는 값은 빈 문자열. items 최대 4개."""}
+            ]}]
         )
 
         raw = next((b.text for b in response.content if b.type == "text"), "")
-        clean = raw.replace("```json", "").replace("```", "").strip()
-
-        import json
-        parsed = json.loads(clean)
+        parsed = json.loads(raw.replace("```json", "").replace("```", "").strip())
         return jsonify({"ok": True, "data": parsed})
 
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# ── Queue: 저장 ───────────────────────────────────────
+@app.route("/queue", methods=["POST"])
+def add_entry():
+    try:
+        entry = request.json
+        queue = load_queue()
+        queue.append(entry)
+        save_queue(queue)
+        return jsonify({"ok": True, "count": len(queue)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# ── Queue: 전체 조회 ──────────────────────────────────
+@app.route("/queue", methods=["GET"])
+def get_queue():
+    try:
+        return jsonify({"ok": True, "data": load_queue()})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# ── Queue: 삭제 ───────────────────────────────────────
+@app.route("/queue/<int:entry_id>", methods=["DELETE"])
+def delete_entry(entry_id):
+    try:
+        queue = load_queue()
+        queue = [e for e in queue if e.get("id") != entry_id]
+        save_queue(queue)
+        return jsonify({"ok": True, "count": len(queue)})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
