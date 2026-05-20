@@ -22,17 +22,13 @@ h1 em{font-style:italic;color:var(--orange);font-weight:300;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 26px;margin-bottom:14px;}
 .card.locked{opacity:.3;pointer-events:none;}
 .clabel{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
-
-/* Notion URL input */
 .notion-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border-radius:10px;margin-bottom:16px;border:1.5px solid var(--border);transition:border-color .2s;}
 .notion-row:focus-within{border-color:var(--accent);}
 .notion-n{width:28px;height:28px;background:var(--accent);color:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
 .notion-input{flex:1;border:none;background:transparent;font-size:13px;font-family:'DM Mono',monospace;color:var(--text);outline:none;}
 .notion-input::placeholder{color:var(--muted);}
-.notion-status{font-size:11px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.notion-status{font-size:11px;white-space:nowrap;font-family:'DM Mono',monospace;color:var(--muted);}
 .notion-status.ok{color:var(--green);}
-.notion-status.skip{color:var(--muted);}
-
 .ugrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .uzone{position:relative;border:1.5px dashed var(--border);border-radius:12px;padding:20px 14px 16px;text-align:center;cursor:pointer;transition:all .2s;overflow:hidden;}
 .uzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
@@ -73,28 +69,49 @@ table{width:100%;border-collapse:collapse;font-size:12px;}
 th{background:var(--surface2);padding:7px 8px;text-align:left;font-size:10px;color:var(--muted);font-weight:600;font-family:'DM Mono',monospace;border-bottom:1.5px solid var(--border);white-space:nowrap;}
 td{padding:6px 8px;border-bottom:1px solid var(--border);}
 td input{border:none;background:transparent;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:var(--text);width:100%;outline:none;}
-.qitem{border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px;display:flex;align-items:center;gap:12px;background:var(--surface);}
-.qitem:last-child{margin-bottom:0;}
+
+/* Queue */
+.qitem{border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px;background:var(--surface);}
+.qitem.completed{opacity:.55;}
+.qitem-top{display:flex;align-items:center;gap:12px;}
 .qnum{width:26px;height:26px;border-radius:50%;background:var(--surface2);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-family:'DM Mono',monospace;}
 .qinfo{flex:1;min-width:0;}
 .qname{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.qmeta{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;}
-.qtag{font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+.qmeta{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;line-height:1.6;}
+.qtag{font-size:11px;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0;}
 .qtag.c{background:rgba(42,122,74,.1);color:var(--green);}
 .qtag.n{background:rgba(200,90,42,.1);color:var(--orange);}
-.qdel{background:none;border:none;color:var(--muted);cursor:pointer;padding:4px;font-size:18px;line-height:1;flex-shrink:0;}
-.qdel:hover{color:var(--err);}
+.qtag.done{background:rgba(26,26,26,.08);color:var(--muted);}
+.qactions{display:flex;gap:6px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.btn-complete{padding:6px 14px;background:var(--green);color:white;border:none;border-radius:7px;font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;}
+.btn-complete:hover{background:#1d5c35;}
+.btn-complete:disabled{background:#ccc;cursor:not-allowed;}
+.btn-del{padding:6px 10px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;transition:all .2s;}
+.btn-del:hover{color:var(--err);border-color:var(--err);}
+
+/* 발급완료 입력 패널 */
+.complete-panel{display:none;margin-top:10px;padding:14px;background:rgba(42,122,74,.05);border:1.5px solid rgba(42,122,74,.2);border-radius:10px;}
+.complete-panel.open{display:block;}
+.cpanel-title{font-size:11px;font-family:'DM Mono',monospace;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;font-weight:600;}
+.cpanel-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.cpanel-row:last-child{margin-bottom:0;}
+.cpanel-label{font-size:12px;color:var(--muted);width:110px;flex-shrink:0;}
+.cpanel-input{flex:1;border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:white;outline:none;transition:border-color .2s;}
+.cpanel-input:focus{border-color:var(--green);}
+.btn-confirm{padding:8px 16px;background:var(--green);color:white;border:none;border-radius:7px;font-size:13px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;}
+.btn-confirm:hover{background:#1d5c35;}
+
 .empty{padding:32px;text-align:center;color:var(--muted);font-size:13px;}
 .notice{margin-top:12px;padding:12px 14px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7;}
 .notice strong{color:var(--accent);}
-@media(max-width:520px){.ugrid,.fgrid,.rcols{grid-template-columns:1fr;}h1{font-size:22px;}}
+@media(max-width:520px){.ugrid,.fgrid,.rcols{grid-template-columns:1fr;}h1{font-size:22px;}.cpanel-row{flex-wrap:wrap;}.cpanel-label{width:auto;}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="brand">PaperPop · 세금계산서 자동화</div>
   <h1>파일 올리면 <em>바로</em><br>홈택스 엑셀로</h1>
-  <p class="subtitle">노션 페이지 URL 입력 → 파일 업로드 → 저장 한 번으로 노션 첨부까지</p>
+  <p class="subtitle">작업자: 파일 업로드 → AI 추출 → 저장 &nbsp;|&nbsp; 지희님: 발급 완료 처리 → 노션 자동 기입</p>
 
   <div class="tabs">
     <div class="tab active" id="tab-upload" onclick="switchTab('upload')">📤 업로드 (작업자)</div>
@@ -105,26 +122,21 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
   <div id="view-upload">
     <div class="card" id="cardUpload">
       <div class="clabel">Step 01 · 노션 페이지 + 파일 업로드</div>
-
-      <!-- Notion URL -->
       <div class="notion-row">
         <div class="notion-n">N</div>
-        <input class="notion-input" id="notionUrl" placeholder="노션 거래처 페이지 URL (선택 — 입력 시 파일 자동 첨부)" oninput="onNotionUrl()">
-        <span class="notion-status skip" id="notionStatus">미입력 시 스킵</span>
+        <input class="notion-input" id="notionUrl" placeholder="노션 거래처 페이지 URL (선택)" oninput="onNotionUrl()">
+        <span class="notion-status" id="notionStatus">미입력 시 스킵</span>
       </div>
-
       <div class="ugrid">
         <div class="uzone" id="z1" ondragover="dov(event,'1')" ondragleave="dlv('1')" ondrop="ddp(event,'1')">
           <input type="file" id="fi1" accept="image/jpeg,image/png,.pdf" onchange="fc(this,'1')">
-          <div class="uz-icon">🏢</div>
-          <div class="uz-title">사업자등록증</div>
+          <div class="uz-icon">🏢</div><div class="uz-title">사업자등록증</div>
           <div class="uz-hint">JPG · PNG · PDF</div>
           <div class="uz-name c1" id="fn1"></div>
         </div>
         <div class="uzone" id="z2" ondragover="dov(event,'2')" ondragleave="dlv('2')" ondrop="ddp(event,'2')">
           <input type="file" id="fi2" accept="image/jpeg,image/png,.pdf" onchange="fc(this,'2')">
-          <div class="uz-icon">📋</div>
-          <div class="uz-title">견적서</div>
+          <div class="uz-icon">📋</div><div class="uz-title">견적서</div>
           <div class="uz-hint">JPG · PNG · PDF</div>
           <div class="uz-name c2" id="fn2"></div>
         </div>
@@ -152,6 +164,7 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
           <div class="rf"><div class="rf-key">작성일자</div><div class="rf-val"><input id="r_date" placeholder="YYYYMMDD"></div></div>
           <div class="rf"><div class="rf-key">공급가액 합계</div><div class="rf-val"><input id="r_total" placeholder="숫자만"></div></div>
           <div class="rf"><div class="rf-key">세액 합계</div><div class="rf-val"><input id="r_tax" placeholder="숫자만"></div></div>
+          <div class="rf"><div class="rf-key">VAT포함 총액</div><div class="rf-val"><input id="r_vat" placeholder="숫자만"></div></div>
           <div class="rf"><div class="rf-key">영수/청구</div><div class="rf-val">
             <select id="r_receipt">
               <option value="02">청구(02) — 아직 못 받은 경우</option>
@@ -169,7 +182,7 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
         </table>
       </div>
       <button class="btn green" id="btnSave" onclick="saveEntry()">✓ 저장하기</button>
-      <div class="loading" id="ldSave"><div class="spin"></div><span id="ldSaveMsg">저장 중...</span></div>
+      <div class="loading" id="ldSave"><div class="spin"></div><span>저장 중...</span></div>
       <div class="errbox" id="errSave"></div>
     </div>
   </div>
@@ -199,8 +212,8 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
       <div id="queueList"></div>
     </div>
     <div class="notice">
-      <strong>홈택스 일괄발급:</strong> 전자세금계산서 → 일괄발급 → 파일 업로드<br>
-      한 파일에 최대 100건 · 발급은 50건씩 처리
+      <strong>발급 완료 버튼:</strong> 클릭 시 노션 페이지에 업체명·매출액·발행일 자동 기입<br>
+      <strong>홈택스 일괄발급:</strong> 전자세금계산서 → 일괄발급 → 파일 업로드
     </div>
   </div>
 </div>
@@ -223,8 +236,8 @@ window.onload = () => {
 };
 
 function switchTab(t) {
-  document.getElementById('view-upload').style.display = t==='upload' ? 'block' : 'none';
-  document.getElementById('view-admin').style.display  = t==='admin'  ? 'block' : 'none';
+  document.getElementById('view-upload').style.display = t==='upload'?'block':'none';
+  document.getElementById('view-admin').style.display  = t==='admin' ?'block':'none';
   document.getElementById('tab-upload').classList.toggle('active', t==='upload');
   document.getElementById('tab-admin').classList.toggle('active',  t==='admin');
   if (t==='admin') loadQueue();
@@ -233,11 +246,10 @@ function switchTab(t) {
 function onNotionUrl() {
   const v = document.getElementById('notionUrl').value.trim();
   const st = document.getElementById('notionStatus');
-  if (v) { st.textContent = '✓ 저장 시 자동 첨부'; st.className = 'notion-status ok'; }
-  else   { st.textContent = '미입력 시 스킵';       st.className = 'notion-status skip'; }
+  if (v) { st.textContent='✓ 발급 완료 시 노션 자동 기입'; st.className='notion-status ok'; }
+  else   { st.textContent='미입력 시 스킵'; st.className='notion-status'; }
 }
 
-// ── Drag/drop ─────────────────────────────────────────
 function dov(e,id){e.preventDefault();document.getElementById('z'+id).classList.add('drag');}
 function dlv(id){document.getElementById('z'+id).classList.remove('drag');}
 function ddp(e,id){e.preventDefault();dlv(id);if(e.dataTransfer.files[0])sf(id,e.dataTransfer.files[0]);}
@@ -247,11 +259,9 @@ function sf(id,file){
   else        {f2=file;document.getElementById('fn2').textContent='✓ '+file.name;document.getElementById('z2').className='uzone f2';}
   document.getElementById('btnEx').disabled=!(f1&&f2);
 }
-
 function toB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
 function mt(file){const e=file.name.split('.').pop().toLowerCase();if(e==='pdf')return'application/pdf';if(['jpg','jpeg'].includes(e))return'image/jpeg';if(e==='png')return'image/png';return'image/jpeg';}
 
-// ── Extract ───────────────────────────────────────────
 async function extract(){
   const err=document.getElementById('errUp');
   err.classList.remove('show');
@@ -284,6 +294,7 @@ function fillResult(d){
   s('r_addr',d.buyer_addr);s('r_biz',d.buyer_biz);s('r_item',d.buyer_item);
   s('r_email',d.buyer_email);s('r_date',d.issue_date);
   s('r_total',d.total_supply);s('r_tax',d.total_tax);
+  s('r_vat',d.total_vat_included);
   (d.items||[]).slice(0,4).forEach((it,i)=>{
     s('id'+i,it.day);s('in'+i,it.name);s('is'+i,it.spec);
     s('iq'+i,it.qty);s('ip'+i,it.price);s('iy'+i,it.supply);s('it'+i,it.tax);
@@ -307,55 +318,39 @@ function buildRows(){
 
 function gv(id){return(document.getElementById(id)?.value||'').trim();}
 
-// ── Save ──────────────────────────────────────────────
 async function saveEntry(){
   const err=document.getElementById('errSave');
   err.classList.remove('show');
   const name=gv('r_name');
   if(!name){err.textContent='상호/기관명을 확인해주세요.';err.classList.add('show');return;}
-
-  const notionUrl=document.getElementById('notionUrl').value.trim();
   const entry={
     id:Date.now(), saved_at:new Date().toLocaleDateString('ko-KR'),
-    notion_url: notionUrl || '',
+    notion_url: document.getElementById('notionUrl').value.trim(),
+    completed: false,
     buyer_reg:gv('r_reg'), buyer_name:name, buyer_ceo:gv('r_ceo'),
     buyer_addr:gv('r_addr'), buyer_biz:gv('r_biz'), buyer_item:gv('r_item'),
     buyer_email:gv('r_email'), issue_date:gv('r_date'),
-    total_supply:gv('r_total'), total_tax:gv('r_tax'),
+    total_supply:gv('r_total'), total_tax:gv('r_tax'), total_vat:gv('r_vat'),
     receipt:gv('r_receipt'), note:gv('r_note'), items:[]
   };
   for(let i=0;i<4;i++){const n=gv('in'+i);if(n)entry.items.push({day:gv('id'+i),name:n,spec:gv('is'+i),qty:gv('iq'+i),price:gv('ip'+i),supply:gv('iy'+i),tax:gv('it'+i)});}
 
-  // 노션 첨부용 파일 b64
-  const files=[];
-  if(f1){const b=await toB64(f1);files.push({name:f1.name,b64:b,mime:mt(f1)});}
-  if(f2){const b=await toB64(f2);files.push({name:f2.name,b64:b,mime:mt(f2)});}
-
   document.getElementById('btnSave').disabled=true;
   document.getElementById('ldSave').classList.add('show');
-
   try{
     const resp=await fetch(SERVER+'/queue',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({entry, notion_page_id: notionUrl, files})
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entry})
     });
     const result=await resp.json();
     if(!result.ok)throw new Error(result.error);
-
-    const notionOk = result.notion?.ok;
-    const msg = notionUrl
-      ? (notionOk ? `✓ "${name}" 저장 + 노션 첨부 완료!` : `✓ "${name}" 저장 완료 (노션 첨부 실패 — 연결 확인 필요)`)
-      : `✓ "${name}" 저장 완료!`;
-
-    // Reset
     f1=null;f2=null;
     ['1','2'].forEach(id=>{document.getElementById('fi'+id).value='';document.getElementById('fn'+id).textContent='';document.getElementById('z'+id).className='uzone';});
-    document.getElementById('notionUrl').value='';
-    onNotionUrl();
+    document.getElementById('notionUrl').value='';onNotionUrl();
     document.getElementById('btnEx').disabled=true;
     document.getElementById('cardResult').classList.add('locked');
     buildRows();
-    alert(msg+'\n전체 '+result.count+'건');
+    alert(`✓ "${name}" 저장 완료!\n전체 ${result.count}건`);
     switchTab('admin');
   }catch(e){
     err.textContent='저장 실패: '+e.message;err.classList.add('show');
@@ -386,19 +381,102 @@ async function deleteEntry(id){
   await loadQueue();
 }
 
+function toggleComplete(id){
+  const panel=document.getElementById('cp_'+id);
+  panel.classList.toggle('open');
+}
+
+async function confirmComplete(id){
+  const entry = queue.find(e=>e.id===id);
+  if(!entry)return;
+
+  const issueDate = document.getElementById('cp_date_'+id).value.trim();
+  const totalVat  = document.getElementById('cp_vat_'+id).value.trim();
+  const btn       = document.getElementById('cp_btn_'+id);
+
+  if(!issueDate){alert('발행일을 입력해주세요.');return;}
+
+  btn.disabled=true;
+  btn.textContent='처리 중...';
+
+  try{
+    // 노션 기입
+    if(entry.notion_url){
+      const resp=await fetch(SERVER+'/notion-complete',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          notion_url: entry.notion_url,
+          issue_date: issueDate.replace(/-/g,''),
+          buyer_name: entry.buyer_name,
+          total_vat:  totalVat || entry.total_vat || ''
+        })
+      });
+      const result=await resp.json();
+      if(!result.ok) console.warn('노션 기입 실패:', result.error);
+    }
+
+    // 완료 표시 저장
+    entry.completed=true;
+    entry.completed_at=issueDate;
+    await fetch(SERVER+'/queue',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entry:{...entry}})
+    });
+    // 기존 항목 업데이트 (삭제 후 재저장)
+    await fetch(SERVER+'/queue/'+id,{method:'DELETE'});
+    await fetch(SERVER+'/queue',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({entry})
+    });
+
+    alert(entry.notion_url
+      ? `✓ 발급 완료!\n노션 페이지에 자동 기입됐어요.`
+      : `✓ 발급 완료!`);
+    await loadQueue();
+  }catch(e){
+    alert('오류: '+e.message);
+    btn.disabled=false;
+    btn.textContent='완료 확인';
+  }
+}
+
 function renderQueue(){
   const el=document.getElementById('queueList');
   document.getElementById('qCount').textContent=queue.length;
   if(!queue.length){el.innerHTML='<div class="empty">저장된 항목이 없어요.</div>';return;}
+
+  const today=new Date().toISOString().slice(0,10);
+
   el.innerHTML=queue.map((e,i)=>`
-    <div class="qitem">
-      <div class="qnum">${i+1}</div>
-      <div class="qinfo">
-        <div class="qname">${e.buyer_name}</div>
-        <div class="qmeta">${e.issue_date||'날짜미정'} · ${Number(e.total_supply||0).toLocaleString()}원 + 세액 ${Number(e.total_tax||0).toLocaleString()}원 · ${e.saved_at}${e.notion_url?` · <a href="${e.notion_url}" target="_blank" style="color:var(--accent);text-decoration:underline;">노션 페이지 →</a>`:''}</div>
+    <div class="qitem${e.completed?' completed':''}">
+      <div class="qitem-top">
+        <div class="qnum">${i+1}</div>
+        <div class="qinfo">
+          <div class="qname">${e.buyer_name}${e.notion_url?` <a href="${e.notion_url}" target="_blank" style="font-size:11px;color:var(--muted);text-decoration:underline;">노션 →</a>`:''}</div>
+          <div class="qmeta">
+            ${e.issue_date||'날짜미정'} · ${Number(e.total_supply||0).toLocaleString()}원 (VAT포함 ${Number(e.total_vat||0).toLocaleString()}원) · ${e.saved_at}
+            ${e.completed?`<br>✓ 발급완료 ${e.completed_at||''}`:''}</div>
+        </div>
+        <div class="qtag ${e.completed?'done':e.receipt==='01'?'c':'n'}">${e.completed?'발급완료':e.receipt==='01'?'영수':'청구'}</div>
       </div>
-      <div class="qtag ${e.receipt==='01'?'c':'n'}">${e.receipt==='01'?'영수':'청구'}</div>
-      <button class="qdel" onclick="deleteEntry(${e.id})">×</button>
+      ${!e.completed?`
+      <div class="qactions">
+        <button class="btn-complete" onclick="toggleComplete(${e.id})">✦ 발급 완료 처리</button>
+        <button class="btn-del" onclick="deleteEntry(${e.id})">삭제</button>
+      </div>
+      <div class="complete-panel" id="cp_${e.id}">
+        <div class="cpanel-title">노션에 기입할 정보 확인</div>
+        <div class="cpanel-row">
+          <span class="cpanel-label">계산서 발행일</span>
+          <input class="cpanel-input" id="cp_date_${e.id}" type="date" value="${today}">
+        </div>
+        <div class="cpanel-row">
+          <span class="cpanel-label">최종매출액(VAT포함)</span>
+          <input class="cpanel-input" id="cp_vat_${e.id}" placeholder="숫자만" value="${e.total_vat||''}">
+          <button class="btn-confirm" id="cp_btn_${e.id}" onclick="confirmComplete(${e.id})">완료 확인</button>
+        </div>
+      </div>`:
+      `<div class="qactions"><button class="btn-del" onclick="deleteEntry(${e.id})">삭제</button></div>`}
     </div>`).join('');
 }
 
