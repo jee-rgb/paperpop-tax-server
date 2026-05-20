@@ -187,13 +187,13 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
       <details style="margin-bottom:14px;">
         <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:8px 0;user-select:none;">▸ 페이퍼팝 공급자 정보</summary>
         <div class="fgrid" style="margin-top:12px;">
-          <div class="fg"><label>사업자등록번호</label><input id="s_reg" placeholder="하이픈 없이"></div>
+          <div class="fg"><label>사업자등록번호</label><input id="s_reg" value="3908801026"></div>
           <div class="fg"><label>상호</label><input id="s_name" value="주식회사 페이퍼팝"></div>
-          <div class="fg"><label>대표자명</label><input id="s_ceo" value="박지희"></div>
+          <div class="fg"><label>대표자명</label><input id="s_ceo" value="박대희"></div>
           <div class="fg"><label>이메일</label><input id="s_email"></div>
-          <div class="fg full"><label>사업장주소</label><input id="s_addr"></div>
-          <div class="fg"><label>업태</label><input id="s_biz"></div>
-          <div class="fg"><label>종목</label><input id="s_item"></div>
+          <div class="fg full"><label>사업장주소</label><input id="s_addr" value="서울특별시 성동구 성수일로12길 20, 5층 501호(성수동2가, 성동안심상가)"></div>
+          <div class="fg"><label>업태</label><input id="s_biz" value="제조업, 사업시설 관리·사업지원 및 임대 서비스"></div>
+          <div class="fg"><label>종목</label><input id="s_item" value="종이생활용품, 전시·컨벤션 및 행사 대행업, 디자인"></div>
         </div>
       </details>
       <div id="queueList"></div>
@@ -395,7 +395,7 @@ function renderQueue(){
       <div class="qnum">${i+1}</div>
       <div class="qinfo">
         <div class="qname">${e.buyer_name}</div>
-        <div class="qmeta">${e.issue_date||'날짜미정'} · ${Number(e.total_supply||0).toLocaleString()}원 + 세액 ${Number(e.total_tax||0).toLocaleString()}원 · ${e.saved_at}${e.notion_url?' · 노션연결':''}</div>
+        <div class="qmeta">${e.issue_date||'날짜미정'} · ${Number(e.total_supply||0).toLocaleString()}원 + 세액 ${Number(e.total_tax||0).toLocaleString()}원 · ${e.saved_at}${e.notion_url?` · <a href="${e.notion_url}" target="_blank" style="color:var(--accent);text-decoration:underline;">노션 페이지 →</a>`:''}</div>
       </div>
       <div class="qtag ${e.receipt==='01'?'c':'n'}">${e.receipt==='01'?'영수':'청구'}</div>
       <button class="qdel" onclick="deleteEntry(${e.id})">×</button>
