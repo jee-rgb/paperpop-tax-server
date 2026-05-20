@@ -15,7 +15,6 @@ DATA_FILE     = "queue.json"
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 
-# ── Queue helpers ─────────────────────────────────────
 def load_queue():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
@@ -26,7 +25,6 @@ def save_queue(queue):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(queue, f, ensure_ascii=False, indent=2)
 
-# ── Static ────────────────────────────────────────────
 @app.route("/")
 def index():
     return send_from_directory(".", "index.html")
@@ -58,7 +56,7 @@ def extract():
                 make_block(quote_b64, quote_mt),
                 {"type": "text", "text": """첫 번째 문서는 공급받는자의 사업자등록증 또는 고유번호증, 두 번째는 견적서입니다.
 JSON만 출력하세요:
-{"buyer_reg":"","buyer_name":"","buyer_ceo":"","buyer_addr":"","buyer_biz":"","buyer_item":"","buyer_email":"","issue_date":"YYYYMMDD","total_supply":"숫자만","total_tax":"숫자만","items":[{"day":"DD","name":"","spec":"","qty":"","price":"","supply":"","tax":""}]}
+{"buyer_reg":"","buyer_name":"","buyer_ceo":"","buyer_addr":"","buyer_biz":"","buyer_item":"","buyer_email":"","issue_date":"YYYYMMDD","total_supply":"숫자만","total_tax":"숫자만","total_vat_included":"VAT포함총액숫자만","items":[{"day":"DD","name":"","spec":"","qty":"","price":"","supply":"","tax":""}]}
 모르는 값은 빈 문자열. items 최대 4개."""}
             ]}]
         )
@@ -70,109 +68,16 @@ JSON만 출력하세요:
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
-# ── Notion: 파일 업로드 후 페이지에 첨부 ─────────────
-def attach_files_to_notion(page_id, files):
-    """
-    files: [{"name": "파일명.pdf", "b64": "...", "mime": "application/pdf"}, ...]
-    Notion File Upload API를 사용해 첨부
-    """
-    if not NOTION_TOKEN:
-        return False, "NOTION_TOKEN 미설정"
-
-    headers = {
-        "Authorization": f"Bearer {NOTION_TOKEN}",
-        "Notion-Version": "2022-06-28",
-    }
-
-    uploaded_files = []
-    for f in files:
-        try:
-            file_bytes = base64.b64decode(f["b64"])
-
-            # 1) 업로드 URL 요청
-            upload_resp = requests.post(
-                "https://api.notion.com/v1/file_uploads",
-                headers={**headers, "Content-Type": "application/json"},
-                json={"name": f["name"]}
-            )
-            if not upload_resp.ok:
-                continue
-            upload_data = upload_resp.json()
-            upload_url  = upload_data.get("upload_url")
-            file_id     = upload_data.get("id")
-
-            if not upload_url:
-                continue
-
-            # 2) 실제 파일 전송
-            put_resp = requests.put(
-                upload_url,
-                headers={"Authorization": f"Bearer {NOTION_TOKEN}"},
-                files={"file": (f["name"], file_bytes, f["mime"])}
-            )
-            if put_resp.ok:
-                uploaded_files.append({"type": "file_upload", "file_upload": {"id": file_id}})
-
-        except Exception:
-            continue
-
-    if not uploaded_files:
-        return False, "파일 업로드 실패"
-
-    # 3) 페이지 속성(견적서/사업자등록증)에 첨부
-    # 속성명이 다를 수 있으므로 files 블록으로도 추가
-    prop_resp = requests.patch(
-        f"https://api.notion.com/v1/pages/{page_id}",
-        headers={**headers, "Content-Type": "application/json"},
-        json={"properties": {"견적서/사업자등록증": {"files": uploaded_files}}}
-    )
-
-    if prop_resp.ok:
-        return True, "ok"
-
-    # 속성명이 다르면 페이지 블록으로 추가 (fallback)
-    blocks = []
-    for f in files:
-        # 일반 블록 파일 첨부는 공개 URL이 필요해 생략하고 텍스트로 대신
-        blocks.append({
-            "object": "block",
-            "type": "paragraph",
-            "paragraph": {"rich_text": [{"type": "text", "text": {"content": f"📎 {f['name']} (첨부됨)"}}]}
-        })
-
-    requests.patch(
-        f"https://api.notion.com/v1/blocks/{page_id}/children",
-        headers={**headers, "Content-Type": "application/json"},
-        json={"children": blocks}
-    )
-    return True, "fallback"
-
-# ── Queue: 저장 + 노션 첨부 ───────────────────────────
+# ── Queue: 저장 ───────────────────────────────────────
 @app.route("/queue", methods=["POST"])
 def add_entry():
     try:
-        data     = request.json
-        entry    = data.get("entry")
-        notion_page_id = data.get("notion_page_id", "").strip()
-        files    = data.get("files", [])  # [{name, b64, mime}]
-
+        data  = request.json
+        entry = data.get("entry")
         queue = load_queue()
         queue.append(entry)
         save_queue(queue)
-
-        notion_result = None
-        if notion_page_id and files:
-            # URL에서 ID 추출 (하이픈 없는 32자리 or URL 끝 부분)
-            pid = notion_page_id.replace("-", "")
-            if "notion.so" in pid:
-                pid = pid.split("/")[-1].split("?")[0]
-                pid = pid[-32:] if len(pid) >= 32 else pid
-
-            ok, msg = attach_files_to_notion(pid, files)
-            notion_result = {"ok": ok, "msg": msg}
-
-        return jsonify({"ok": True, "count": len(queue), "notion": notion_result})
-
+        return jsonify({"ok": True, "count": len(queue)})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
@@ -191,6 +96,70 @@ def delete_entry(entry_id):
         queue = [e for e in load_queue() if e.get("id") != entry_id]
         save_queue(queue)
         return jsonify({"ok": True, "count": len(queue)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+# ── 발급 완료 → 노션 자동 기입 ───────────────────────
+@app.route("/notion-complete", methods=["POST"])
+def notion_complete():
+    try:
+        data           = request.json
+        notion_url     = data.get("notion_url", "")
+        issue_date     = data.get("issue_date", "")   # YYYYMMDD
+        buyer_name     = data.get("buyer_name", "")
+        total_vat      = data.get("total_vat", "")    # VAT 포함 총액
+
+        if not NOTION_TOKEN:
+            return jsonify({"ok": False, "error": "NOTION_TOKEN 미설정"}), 500
+
+        # 페이지 ID 추출
+        page_id = notion_url.split("?")[0].split("/")[-1].replace("-", "")
+        if len(page_id) > 32:
+            page_id = page_id[-32:]
+
+        # 날짜 포맷 변환 YYYYMMDD → YYYY-MM-DD
+        if len(issue_date) == 8:
+            fmt_date = f"{issue_date[:4]}-{issue_date[4:6]}-{issue_date[6:8]}"
+        else:
+            fmt_date = issue_date
+
+        headers = {
+            "Authorization": f"Bearer {NOTION_TOKEN}",
+            "Notion-Version": "2022-06-28",
+            "Content-Type": "application/json"
+        }
+
+        properties = {}
+
+        # 업체명
+        if buyer_name:
+            properties["업체명"] = {
+                "rich_text": [{"type": "text", "text": {"content": buyer_name}}]
+            }
+
+        # 최종매출액(vat포함)
+        if total_vat:
+            properties["최종매출액(vat포함)"] = {
+                "rich_text": [{"type": "text", "text": {"content": str(total_vat)}}]
+            }
+
+        # [★]계산서발행일/결제일
+        if fmt_date:
+            properties["[★]계산서발행일/결제일"] = {
+                "date": {"start": fmt_date}
+            }
+
+        resp = requests.patch(
+            f"https://api.notion.com/v1/pages/{page_id}",
+            headers=headers,
+            json={"properties": properties}
+        )
+
+        if resp.ok:
+            return jsonify({"ok": True})
+        else:
+            return jsonify({"ok": False, "error": resp.text}), 500
+
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 500
 
