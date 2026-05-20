@@ -17,29 +17,12 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 h1{font-size:26px;font-weight:700;letter-spacing:-.8px;line-height:1.25;margin-bottom:6px;}
 h1 em{font-style:italic;color:var(--orange);font-weight:300;}
 .subtitle{font-size:13px;color:var(--muted);font-weight:300;line-height:1.6;}
-
-/* Server config banner */
-.server-banner{background:#fff8f0;border:1.5px solid #f0c080;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:13px;}
-.server-banner.ok{background:#f0faf4;border-color:#80c8a0;}
-.server-dot{width:8px;height:8px;border-radius:50%;background:#e08020;flex-shrink:0;}
-.server-dot.ok{background:var(--green);}
-.server-url-wrap{flex:1;display:flex;gap:8px;align-items:center;}
-.server-url-input{flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;font-family:'DM Mono',monospace;color:var(--text);background:var(--surface2);outline:none;}
-.server-url-input:focus{border-color:var(--accent);}
-.btn-sm{padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;}
-.btn-sm:hover{background:#333;}
-
-/* Tabs */
 .tabs{display:flex;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:16px;}
 .tab{flex:1;padding:10px;text-align:center;font-size:13px;font-weight:500;color:var(--muted);border-radius:8px;cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;}
 .tab.active{background:var(--accent);color:white;}
-
-/* Card */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px 26px;margin-bottom:14px;}
 .card.locked{opacity:.3;pointer-events:none;}
 .clabel{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
-
-/* Upload zones */
 .ugrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .uzone{position:relative;border:1.5px dashed var(--border);border-radius:12px;padding:20px 14px 16px;text-align:center;cursor:pointer;transition:all .2s;overflow:hidden;}
 .uzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
@@ -51,33 +34,23 @@ h1 em{font-style:italic;color:var(--orange);font-weight:300;}
 .uz-hint{font-size:11px;color:var(--muted);}
 .uz-name{font-size:11px;font-family:'DM Mono',monospace;margin-top:7px;word-break:break-all;line-height:1.4;}
 .uz-name.c1{color:var(--orange)}.uz-name.c2{color:var(--green)}
-
-/* Form */
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;}
 .fg{display:flex;flex-direction:column;gap:4px;}
 .fg.full{grid-column:1/-1;}
 .fg label{font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);}
 .fg input,.fg select{border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;font-size:13px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--surface2);outline:none;transition:border-color .2s,background .2s;width:100%;}
 .fg input:focus,.fg select:focus{border-color:var(--accent);background:white;}
-
-/* Buttons */
 .btn{width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;}
-.btn:hover{background:#333;}
-.btn:disabled{background:#ccc;cursor:not-allowed;}
+.btn:hover{background:#333;}.btn:disabled{background:#ccc;cursor:not-allowed;}
 .btn.outline{background:white;color:var(--accent);border:2px solid var(--accent);margin-top:0;}
 .btn.outline:hover{background:var(--accent);color:white;}
-.btn.green{background:var(--green);}
-.btn.green:hover{background:#1d5c35;}
-
-/* Loading / Error */
+.btn.green{background:var(--green);}.btn.green:hover{background:#1d5c35;}
 .loading{display:none;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border-radius:10px;margin-top:10px;font-size:13px;color:var(--muted);}
 .loading.show{display:flex;}
 .spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .errbox{display:none;margin-top:10px;padding:11px 14px;background:rgba(200,58,42,.06);border:1px solid rgba(200,58,42,.2);border-radius:8px;font-size:13px;color:var(--err);}
 .errbox.show{display:block;}
-
-/* Result */
 .rcols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
 .rblock{background:var(--surface2);border-radius:10px;padding:14px;}
 .rblock-title{font-size:10px;font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;font-weight:500;}
@@ -86,15 +59,11 @@ h1 em{font-style:italic;color:var(--orange);font-weight:300;}
 .rf-val input,.rf-val select{border:none;border-bottom:1.5px solid var(--border);background:transparent;font-size:13px;font-family:'DM Mono',monospace;color:var(--text);width:100%;outline:none;padding:2px 0 3px;transition:border-color .2s;}
 .rf-val input:focus,.rf-val select:focus{border-bottom-color:var(--accent);}
 .rf-val select{font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;}
-
-/* Items table */
 .iscroll{overflow-x:auto;margin-top:4px;}
 table{width:100%;border-collapse:collapse;font-size:12px;}
 th{background:var(--surface2);padding:7px 8px;text-align:left;font-size:10px;color:var(--muted);font-weight:600;font-family:'DM Mono',monospace;border-bottom:1.5px solid var(--border);white-space:nowrap;}
 td{padding:6px 8px;border-bottom:1px solid var(--border);}
 td input{border:none;background:transparent;font-size:12px;font-family:'Noto Sans KR',sans-serif;color:var(--text);width:100%;outline:none;}
-
-/* Queue */
 .qitem{border:1px solid var(--border);border-radius:10px;padding:13px 15px;margin-bottom:10px;display:flex;align-items:center;gap:12px;background:var(--surface);}
 .qitem:last-child{margin-bottom:0;}
 .qnum{width:26px;height:26px;border-radius:50%;background:var(--surface2);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--muted);font-family:'DM Mono',monospace;}
@@ -107,7 +76,6 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
 .empty{padding:32px;text-align:center;color:var(--muted);font-size:13px;}
 .notice{margin-top:12px;padding:12px 14px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.7;}
 .notice strong{color:var(--accent);}
-
 @media(max-width:520px){.ugrid,.fgrid,.rcols{grid-template-columns:1fr;}h1{font-size:22px;}}
 </style>
 </head>
@@ -119,36 +87,25 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
     <p class="subtitle">작업자: 파일 업로드 → AI 추출 → 저장 &nbsp;|&nbsp; 지희님: 전체 다운로드</p>
   </div>
 
-  <!-- Server config -->
-  <div class="server-banner" id="serverBanner">
-    <div class="server-dot" id="serverDot"></div>
-    <div class="server-url-wrap">
-      <span style="font-size:12px;color:var(--muted);white-space:nowrap;">서버 주소</span>
-      <input class="server-url-input" id="serverUrl" placeholder="https://your-app.onrender.com" value="">
-      <button class="btn-sm" onclick="saveServer()">저장</button>
-    </div>
-    <span id="serverStatus" style="font-size:12px;color:var(--muted);white-space:nowrap;"></span>
-  </div>
-
   <div class="tabs">
     <div class="tab active" id="tab-upload" onclick="switchTab('upload')">📤 업로드 (작업자)</div>
     <div class="tab" id="tab-admin" onclick="switchTab('admin')">📋 전체 목록 (지희님)</div>
   </div>
 
-  <!-- ── UPLOAD TAB ── -->
+  <!-- UPLOAD TAB -->
   <div id="view-upload">
     <div class="card" id="cardUpload">
       <div class="clabel">Step 01 · 파일 업로드</div>
       <div class="ugrid">
         <div class="uzone" id="z1" ondragover="dov(event,'1')" ondragleave="dlv('1')" ondrop="ddp(event,'1')">
-          <input type="file" id="fi1" accept="image/*,.pdf" onchange="fc(this,'1')">
+          <input type="file" id="fi1" accept="image/jpeg,image/png,.pdf" onchange="fc(this,'1')">
           <div class="uz-icon">🏢</div>
           <div class="uz-title">사업자등록증</div>
           <div class="uz-hint">JPG · PNG · PDF</div>
           <div class="uz-name c1" id="fn1"></div>
         </div>
         <div class="uzone" id="z2" ondragover="dov(event,'2')" ondragleave="dlv('2')" ondrop="ddp(event,'2')">
-          <input type="file" id="fi2" accept="image/*,.pdf" onchange="fc(this,'2')">
+          <input type="file" id="fi2" accept="image/jpeg,image/png,.pdf" onchange="fc(this,'2')">
           <div class="uz-icon">📋</div>
           <div class="uz-title">견적서</div>
           <div class="uz-hint">JPG · PNG · PDF</div>
@@ -199,12 +156,15 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
     </div>
   </div>
 
-  <!-- ── ADMIN TAB ── -->
+  <!-- ADMIN TAB -->
   <div id="view-admin" style="display:none">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div class="clabel" style="margin-bottom:0">저장된 건수: <span id="qCount" style="color:var(--accent);font-size:13px;font-weight:700;">0</span>건</div>
-        <button class="btn outline" style="width:auto;padding:8px 16px;margin-top:0;font-size:13px;" onclick="exportAll()">↓ 전체 엑셀 다운로드</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button onclick="loadQueue()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;color:var(--muted);">↺ 새로고침</button>
+          <button class="btn outline" style="width:auto;padding:8px 16px;margin-top:0;font-size:13px;" onclick="exportAll()">↓ 전체 엑셀 다운로드</button>
+        </div>
       </div>
       <details style="margin-bottom:14px;">
         <summary style="font-size:12px;color:var(--muted);cursor:pointer;padding:8px 0;user-select:none;">▸ 페이퍼팝 공급자 정보</summary>
@@ -229,68 +189,27 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
 
 <script>
 let f1=null,f2=null,queue=[];
-const SERVER_KEY='pp_server_url';
 
-// ── Init ──────────────────────────────────────────────
+// 서버 주소 — 배포 후 자동으로 같은 서버 사용
+const SERVER = window.location.origin.includes('localhost') || window.location.protocol === 'file:'
+  ? 'https://paperpop-tax-server.onrender.com'
+  : window.location.origin;
+
 window.onload=()=>{
-  const saved=localStorage.getItem(SERVER_KEY)||'';
-  document.getElementById('serverUrl').value=saved;
-  if(saved)checkServer(saved);
-
   ['s_reg','s_name','s_ceo','s_addr','s_biz','s_item','s_email'].forEach(id=>{
     const v=localStorage.getItem('pp_'+id);
     if(v)document.getElementById(id).value=v;
     document.getElementById(id)?.addEventListener('input',()=>localStorage.setItem('pp_'+id,document.getElementById(id).value));
   });
   buildRows();
-  loadQueue();
 };
 
-// ── Server config ─────────────────────────────────────
-function getServer(){return(localStorage.getItem(SERVER_KEY)||'').replace(/\/$/,'');}
-
-function saveServer(){
-  const url=document.getElementById('serverUrl').value.trim().replace(/\/$/,'');
-  localStorage.setItem(SERVER_KEY,url);
-  checkServer(url);
-}
-
-async function checkServer(url){
-  const dot=document.getElementById('serverDot');
-  const status=document.getElementById('serverStatus');
-  const banner=document.getElementById('serverBanner');
-  status.textContent='연결 확인 중...';
-  try{
-    const r=await fetch(url+'/health',{signal:AbortSignal.timeout(5000)});
-    const d=await r.json();
-    if(d.status==='ok'){
-      dot.className='server-dot ok';
-      banner.className='server-banner ok';
-      status.textContent='✓ 연결됨';
-    }else throw new Error();
-  }catch{
-    dot.className='server-dot';
-    banner.className='server-banner';
-    status.textContent='연결 실패';
-  }
-}
-
-// ── Storage ───────────────────────────────────────────
-async function loadQueue(){
-  try{const r=await window.storage.get('pp_queue',true);queue=r?JSON.parse(r.value):[];}catch{queue=[];}
-  renderQueue();
-}
-async function saveQueue(){
-  try{await window.storage.set('pp_queue',JSON.stringify(queue),true);}catch(e){console.error(e);}
-}
-
-// ── Tabs ──────────────────────────────────────────────
 function switchTab(t){
   document.getElementById('view-upload').style.display=t==='upload'?'block':'none';
   document.getElementById('view-admin').style.display=t==='admin'?'block':'none';
   document.getElementById('tab-upload').classList.toggle('active',t==='upload');
   document.getElementById('tab-admin').classList.toggle('active',t==='admin');
-  if(t==='admin')renderQueue();
+  if(t==='admin')loadQueue();
 }
 
 // ── Drag/drop ─────────────────────────────────────────
@@ -304,23 +223,20 @@ function sf(id,file){
   document.getElementById('btnEx').disabled=!(f1&&f2);
 }
 
-// ── Base64 ────────────────────────────────────────────
 function toB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
 function mt(file){const e=file.name.split('.').pop().toLowerCase();if(e==='pdf')return'application/pdf';if(['jpg','jpeg'].includes(e))return'image/jpeg';if(e==='png')return'image/png';return'image/jpeg';}
 
-// ── Extract via server ────────────────────────────────
+// ── Extract ───────────────────────────────────────────
 async function extract(){
   const err=document.getElementById('errUp');
   err.classList.remove('show');
-  const server=getServer();
-  if(!server){err.textContent='상단에 서버 주소를 먼저 입력해주세요.';err.classList.add('show');return;}
   document.getElementById('btnEx').disabled=true;
   document.getElementById('ldAI').classList.add('show');
   try{
     document.getElementById('ldMsg').textContent='파일 읽는 중...';
     const[b1,b2]=await Promise.all([toB64(f1),toB64(f2)]);
     document.getElementById('ldMsg').textContent='AI가 분석 중...';
-    const resp=await fetch(server+'/extract',{
+    const resp=await fetch(SERVER+'/extract',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({biz_b64:b1,biz_mt:mt(f1),quote_b64:b2,quote_mt:mt(f2)})
     });
@@ -364,7 +280,7 @@ function buildRows(){
   }
 }
 
-// ── Save ──────────────────────────────────────────────
+// ── Save to server ────────────────────────────────────
 function gv(id){return(document.getElementById(id)?.value||'').trim();}
 
 async function saveEntry(){
@@ -381,18 +297,51 @@ async function saveEntry(){
     receipt:gv('r_receipt'),note:gv('r_note'),items:[]
   };
   for(let i=0;i<4;i++){const n=gv('in'+i);if(n)entry.items.push({day:gv('id'+i),name:n,spec:gv('is'+i),qty:gv('iq'+i),price:gv('ip'+i),supply:gv('iy'+i),tax:gv('it'+i)});}
-  queue.push(entry);
-  await saveQueue();
-  f1=null;f2=null;
-  ['1','2'].forEach(id=>{document.getElementById('fi'+id).value='';document.getElementById('fn'+id).textContent='';document.getElementById('z'+id).className='uzone';});
-  document.getElementById('btnEx').disabled=true;
-  document.getElementById('cardResult').classList.add('locked');
-  buildRows();
-  alert(`✓ "${name}" 저장 완료!\n전체 ${queue.length}건`);
-  switchTab('admin');
+
+  try{
+    const resp=await fetch(SERVER+'/queue',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(entry)
+    });
+    const result=await resp.json();
+    if(!result.ok)throw new Error(result.error);
+
+    // Reset
+    f1=null;f2=null;
+    ['1','2'].forEach(id=>{document.getElementById('fi'+id).value='';document.getElementById('fn'+id).textContent='';document.getElementById('z'+id).className='uzone';});
+    document.getElementById('btnEx').disabled=true;
+    document.getElementById('cardResult').classList.add('locked');
+    buildRows();
+    alert(`✓ "${name}" 저장 완료!\n전체 ${result.count}건`);
+    switchTab('admin');
+  }catch(e){
+    err.textContent='저장 실패: '+e.message;err.classList.add('show');
+  }
 }
 
-// ── Queue render ──────────────────────────────────────
+// ── Load from server ──────────────────────────────────
+async function loadQueue(){
+  const el=document.getElementById('queueList');
+  el.innerHTML='<div class="empty"><div class="spin" style="margin:0 auto 8px;display:block;"></div>불러오는 중...</div>';
+  try{
+    const resp=await fetch(SERVER+'/queue');
+    const result=await resp.json();
+    if(!result.ok)throw new Error(result.error);
+    queue=result.data||[];
+    renderQueue();
+  }catch(e){
+    el.innerHTML=`<div class="empty" style="color:var(--err)">불러오기 실패: ${e.message}</div>`;
+  }
+}
+
+async function deleteEntry(id){
+  if(!confirm('삭제할까요?'))return;
+  try{
+    await fetch(SERVER+'/queue/'+id,{method:'DELETE'});
+    await loadQueue();
+  }catch(e){alert('삭제 실패: '+e.message);}
+}
+
 function renderQueue(){
   const el=document.getElementById('queueList');
   document.getElementById('qCount').textContent=queue.length;
@@ -407,12 +356,6 @@ function renderQueue(){
       <div class="qtag">${e.receipt==='01'?'영수':'청구'}</div>
       <button class="qdel" onclick="deleteEntry(${e.id})">×</button>
     </div>`).join('');
-}
-
-async function deleteEntry(id){
-  if(!confirm('삭제할까요?'))return;
-  queue=queue.filter(e=>e.id!==id);
-  await saveQueue();renderQueue();
 }
 
 // ── Export ────────────────────────────────────────────
