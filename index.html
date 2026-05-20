@@ -319,8 +319,8 @@ function parseDate(raw){
   m = raw.match(/(\d{2,4})\.(\d{1,2})\.(\d{1,2})/);
   if(m){ const y=m[1].length===2?'20'+m[1]:m[1]; return y+m[2].padStart(2,'0')+m[3].padStart(2,'0'); }
   // M/D or MM/DD — 현재 연도 사용
-  m = raw.match(/(\d{1,2})\/(\d{1,2})/);
-  if(m){ const y=new Date().getFullYear(); return `${y}${m[1].padStart(2,'0')}${m[2].padStart(2,'0')`; }
+ m = raw.match(/(\d{1,2})\/(\d{1,2})/);
+  if(m){ const y=new Date().getFullYear(); return ''+y+m[1].padStart(2,'0')+m[2].padStart(2,'0'); }
   return '';
 }
 
