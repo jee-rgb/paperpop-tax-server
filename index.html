@@ -297,39 +297,48 @@ function checkReady(){
 
 function validateFileNames(){
   const errEl = document.getElementById('errUp');
-  if(!notionData || !notionData.file_names){
-    errEl.classList.remove('show');
-    return true;
-  }
 
-  // 노션 첨부파일명 목록 파싱
-  const notionFiles = notionData.file_names.split(',').map(n => n.trim().toLowerCase());
-  const uploaded = [f1.name.toLowerCase(), f2.name.toLowerCase()];
+  // 읽기 불가 형식 차단
+  const unreadable = ['webp','gif','bmp','svg','html','htm','heic','heif'];
+  const badFiles = [f1, f2].filter(f => unreadable.includes(f.name.split('.').pop().toLowerCase()));
 
-  const mismatches = [];
-  uploaded.forEach(upName => {
-    const matched = notionFiles.some(nName => {
-      // 확장자 제외 이름 비교 (부분 일치도 허용)
-      const upBase = upName.replace(/\.[^.]+$/, '');
-      const nBase  = nName.replace(/\.[^.]+$/, '');
-      return upName === nName || upBase === nBase || nBase.includes(upBase) || upBase.includes(nBase);
-    });
-    if(!matched) mismatches.push(upName);
-  });
-
-  if(mismatches.length > 0){
-    const notionList = notionFiles.join(', ');
-    const uploadList = mismatches.join(', ');
-    errEl.innerHTML = `⚠️ 파일명이 노션과 다릅니다.<br>
-      <b>노션 첨부파일:</b> ${notionList}<br>
-      <b>업로드한 파일:</b> ${uploadList}<br>
-      <span style="color:var(--muted);font-size:12px;">노션에 올라온 파일과 동일한 파일을 업로드해주세요.</span>`;
+  if(badFiles.length > 0){
+    const names = badFiles.map(f=>f.name).join(', ');
+    errEl.innerHTML = '<b>⚠️ AI가 읽을 수 없는 파일 형식이에요.</b><br>'
+      + '<b>문제 파일:</b> ' + names + '<br>'
+      + '<span style="color:var(--muted);font-size:12px;">JPG · PNG · PDF 형식으로 저장 후 다시 올려주세요.<br>'
+      + '웹 파일(.webp, .html)은 스크린샷(PNG)으로 저장하면 돼요.</span>';
+    errEl.style.cssText = '';
     errEl.classList.add('show');
     document.getElementById('btnEx').disabled = true;
     return false;
   }
 
+  // 노션 파일명 비교 — 경고만, 막지 않음
+  if(notionData && notionData.file_names){
+    const notionFiles = notionData.file_names.split(',').map(n => n.trim().toLowerCase());
+    const uploaded = [f1.name.toLowerCase(), f2.name.toLowerCase()];
+    const mismatches = uploaded.filter(upName =>
+      !notionFiles.some(nName => {
+        const upBase = upName.replace(/\.[^.]+$/, '');
+        const nBase  = nName.replace(/\.[^.]+$/, '');
+        return upName===nName || upBase===nBase || nBase.includes(upBase) || upBase.includes(nBase);
+      })
+    );
+    if(mismatches.length > 0){
+      errEl.innerHTML = '<b>⚠️ 노션 파일과 이름이 달라요</b> — 그래도 계속 진행할 수 있어요.<br>'
+        + '<span style="color:var(--muted);font-size:12px;"><b>노션 첨부파일:</b> ' + notionFiles.join(', ') + '</span>';
+      errEl.style.background = 'rgba(200,160,0,.06)';
+      errEl.style.borderColor = 'rgba(200,160,0,.3)';
+      errEl.style.color = '#a07000';
+      errEl.classList.add('show');
+      document.getElementById('btnEx').disabled = false;
+      return true;
+    }
+  }
+
   errEl.classList.remove('show');
+  errEl.style.cssText = '';
   return true;
 }
 
