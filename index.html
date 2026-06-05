@@ -147,7 +147,10 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
     </div>
 
     <div class="card locked" id="cardResult">
-      <div class="clabel">Step 02 · 결과 확인 · 수정</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="clabel" style="margin-bottom:0;">Step 02 · 결과 확인 · 수정</div>
+        <button onclick="showPreview()" style="padding:6px 14px;background:none;border:1.5px solid var(--border);border-radius:8px;font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;color:var(--text);transition:all .2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">🔍 원본 파일 확인</button>
+      </div>
       <div class="rcols">
         <div class="rblock">
           <div class="rblock-title" style="color:var(--orange)">공급받는자</div>
@@ -198,7 +201,7 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
         <div class="clabel" style="margin-bottom:0">저장된 건수: <span id="qCount" style="color:var(--accent);font-size:13px;font-weight:700;">0</span>건</div>
         <div style="display:flex;gap:8px;">
           <button onclick="loadQueue()" style="background:none;border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;cursor:pointer;color:var(--muted);">↺ 새로고침</button>
-          <button class="btn outline" style="width:auto;padding:8px 16px;margin-top:0;font-size:13px;" onclick="exportExcel()">↓ 국세청 엑셀 다운로드</button>
+          <button class="btn outline" style="width:auto;padding:8px 16px;margin-top:0;font-size:13px;" onclick="showTextData()">📋 홈택스 입력 데이터 복사</button>
         </div>
       </div>
       <details style="margin-bottom:14px;">
@@ -217,13 +220,13 @@ td input{border:none;background:transparent;font-size:12px;font-family:'Noto San
     </div>
     <div class="notice">
       <strong>발급 완료 버튼:</strong> 노션 페이지에 업체명·매출액·발행일 자동 기입<br>
-      <strong>홈택스 입력 데이터 보기:</strong> 각 항목 옆 복사 버튼으로 홈택스에 바로 붙여넣기
+      <strong>홈택스 입력 데이터 복사:</strong> 팝업에서 각 항목 옆 복사 버튼으로 홈택스에 바로 붙여넣기
     </div>
   </div>
 </div>
 
 <script>
-let f1=null, f2=null, queue=[], notionData=null;
+let f1=null, f2=null, queue=[], notionData=null, preview1=null, preview2=null;
 
 const SERVER = (window.location.protocol==='file:' || window.location.hostname==='localhost')
   ? 'https://paperpop-tax-server.onrender.com'
@@ -274,15 +277,23 @@ async function readNotion(){
 
     // 노션에서 읽은 정보 표시
     const info = document.getElementById('notionInfo');
-    info.innerHTML = `
-      <strong>노션에서 읽은 정보:</strong><br>
-      ${result.buyer_name ? `업체명: ${result.buyer_name}<br>` : ''}
-      ${result.issue_date_raw ? `발급일: ${result.issue_date_raw}<br>` : ''}
-      ${result.recv_email ? `수신이메일: ${result.recv_email}<br>` : ''}
-      ${result.item_text ? `품목: ${result.item_text}<br>` : ''}
-      ${result.total_vat ? `VAT포함금액: ${Number(result.total_vat).toLocaleString()}원<br>` : ''}
-      ${result.file_names ? `첨부파일: ${result.file_names}` : ''}
-    `;
+    // 발행일 형식 경고
+    let dateWarn = '';
+    if(result.issue_date_raw){
+      const d = result.issue_date_raw.trim();
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){
+        dateWarn = '<div style="margin-top:6px;padding:6px 10px;background:rgba(200,160,0,.1);border-radius:6px;font-size:11px;color:#a07000;">⚠️ 발행일 형식을 <b>YYYY-MM-DD</b> (예: 2026-05-22)로 통일해주세요</div>';
+      }
+    }
+
+    info.innerHTML = '<strong>노션에서 읽은 정보:</strong><br>'
+      + (result.buyer_name ? '업체명: <b>'+result.buyer_name+'</b><br>' : '')
+      + (result.issue_date_raw ? '발급일: '+result.issue_date_raw+'<br>' : '<span style="color:var(--err)">⚠️ 발급일 없음 — 노션에 입력 필요</span><br>')
+      + (result.recv_email ? '수신이메일: '+result.recv_email+'<br>' : '')
+      + (result.item_text ? '품목: '+result.item_text+'<br>' : '')
+      + (result.total_vat ? 'VAT포함금액: '+Number(result.total_vat).toLocaleString()+'원<br>' : '')
+      + (result.file_names ? '첨부파일: '+result.file_names : '')
+      + dateWarn;
     info.classList.add('show');
     checkReady();
   }catch(e){
@@ -347,8 +358,19 @@ function dlv(id){document.getElementById('z'+id).classList.remove('drag');}
 function ddp(e,id){e.preventDefault();dlv(id);if(e.dataTransfer.files[0])sf(id,e.dataTransfer.files[0]);}
 function fc(inp,id){if(inp.files[0])sf(id,inp.files[0]);}
 function sf(id,file){
-  if(id==='1'){f1=file;document.getElementById('fn1').textContent='✓ '+file.name;document.getElementById('z1').className='uzone f1';}
-  else        {f2=file;document.getElementById('fn2').textContent='✓ '+file.name;document.getElementById('z2').className='uzone f2';}
+  if(id==='1'){
+    f1=file;
+    if(preview1) URL.revokeObjectURL(preview1);
+    preview1 = file.type==='application/pdf' ? null : URL.createObjectURL(file);
+    document.getElementById('fn1').textContent='✓ '+file.name;
+    document.getElementById('z1').className='uzone f1';
+  } else {
+    f2=file;
+    if(preview2) URL.revokeObjectURL(preview2);
+    preview2 = file.type==='application/pdf' ? null : URL.createObjectURL(file);
+    document.getElementById('fn2').textContent='✓ '+file.name;
+    document.getElementById('z2').className='uzone f2';
+  }
   checkReady();
 }
 function toB64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});}
@@ -424,6 +446,23 @@ function fillResult(d){
   s('r_email',d.buyer_email);s('r_date',d.issue_date);
   s('r_total',d.total_supply);s('r_tax',d.total_tax);
   s('r_vat',d.total_vat_included);
+
+  // 업체명 더블체크: AI 추출값 vs 노션 읽은값
+  if(notionData && notionData.buyer_name && d.buyer_name){
+    const aiName = d.buyer_name.trim().replace(/\s/g,'');
+    const notionName = notionData.buyer_name.trim().replace(/\s/g,'');
+    const similar = aiName.includes(notionName) || notionName.includes(aiName) || aiName===notionName;
+    if(!similar){
+      const errEl = document.getElementById('errUp');
+      errEl.innerHTML = '<b>⚠️ 업체명이 다를 수 있어요</b><br>'
+        + '<span style="font-size:12px;">AI가 읽은 업체명: <b>'+d.buyer_name+'</b> &nbsp;|&nbsp; 노션 업체명: <b>'+notionData.buyer_name+'</b></span><br>'
+        + '<button onclick="showPreview()" style="margin-top:6px;padding:4px 12px;background:none;border:1px solid #a07000;border-radius:6px;font-size:11px;cursor:pointer;color:#a07000;font-family:'Noto Sans KR',sans-serif;">🔍 원본 파일 확인해서 수정하기</button>';
+      errEl.style.background = 'rgba(200,160,0,.06)';
+      errEl.style.borderColor = 'rgba(200,160,0,.3)';
+      errEl.style.color = '#a07000';
+      errEl.classList.add('show');
+    }
+  }
 
   // 품목: item_summary 있으면 첫 줄에 통칭으로
   const items = d.items||[];
@@ -587,9 +626,54 @@ function renderQueue(){
     </div>`).join('');
 }
 
-async function exportExcel(){
+function showPreview(){
+  const overlay = document.createElement('div');
+  overlay.className = 'pp-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;overflow-y:auto;padding:24px 16px;';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'max-width:960px;margin:0 auto;background:var(--surface);border-radius:16px;padding:24px;';
+
+  const imgBlock = (file, preview, label) => {
+    if(!file) return '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;">파일 없음</div>';
+    if(file.type === 'application/pdf'){
+      return \`<div style="flex:1;">
+        <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">\${label}</div>
+        <div style="font-size:12px;color:var(--muted);padding:20px;background:var(--surface2);border-radius:8px;text-align:center;">
+          📄 \${file.name}<br><br>
+          <a href="\${URL.createObjectURL(file)}" target="_blank" style="color:var(--accent);text-decoration:underline;">PDF 새 탭에서 열기</a>
+        </div>
+      </div>\`;
+    }
+    return \`<div style="flex:1;min-width:0;">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">\${label}</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;word-break:break-all;">\${file.name}</div>
+      <img src="\${preview}" style="width:100%;border-radius:8px;border:1px solid var(--border);cursor:zoom-in;" onclick="this.style.maxHeight=this.style.maxHeight?'':'none';this.style.position=this.style.position?'':''" alt="\${label}">
+    </div>\`;
+  };
+
+  modal.innerHTML = \`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:700;">원본 파일 확인</div>
+      <button onclick="this.closest('.pp-overlay').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);padding:10px 14px;background:var(--surface2);border-radius:8px;margin-bottom:20px;">
+      💡 아래 원본 파일과 추출된 결과를 비교하세요. 다른 부분은 Step 02에서 직접 수정할 수 있어요.
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      \${imgBlock(f1, preview1, '🏢 사업자등록증')}
+      \${imgBlock(f2, preview2, '📋 견적서')}
+    </div>
+  \`;
+
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function showTextData(){
   if(!queue.length){alert('저장된 항목이 없어요.');return;}
-  const supplier={
+  const sup={
     reg:  document.getElementById('s_reg')?.value.trim()||'',
     name: document.getElementById('s_name')?.value.trim()||'',
     ceo:  document.getElementById('s_ceo')?.value.trim()||'',
@@ -598,22 +682,116 @@ async function exportExcel(){
     item: document.getElementById('s_item')?.value.trim()||'',
     email:document.getElementById('s_email')?.value.trim()||'',
   };
-  try{
-    const resp=await fetch(SERVER+'/export-excel',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({entries:queue,supplier})
-    });
-    if(!resp.ok)throw new Error(await resp.text());
-    const blob=await resp.blob();
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;
-    a.download=`세금계산서_일괄_${new Date().toISOString().slice(0,10).replace(/-/g,'')}_${queue.length}건.xlsx`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }catch(e){
-    alert('다운로드 실패: '+e.message);
-  }
+
+  const overlay=document.createElement('div');
+  overlay.className='pp-overlay';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;overflow-y:auto;padding:24px 16px;';
+
+  const notDone=queue.filter(e=>!e.completed);
+
+  const field=(label,val)=>val?`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <span style="font-size:11px;color:var(--muted);width:120px;flex-shrink:0;">${label}</span>
+      <span style="font-size:13px;font-family:'DM Mono',monospace;flex:1;word-break:break-all;">${val}</span>
+      <button onclick="copyText('${val.replace(/\/g,'\\').replace(/'/g,"\'")}',this)"
+        style="background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;">복사</button>
+    </div>`:'';
+
+  const modal=document.createElement('div');
+  modal.style.cssText='max-width:680px;margin:0 auto;background:var(--surface);border-radius:16px;padding:28px;';
+  modal.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:700;">홈택스 입력 데이터 — ${notDone.length}건</div>
+      <button onclick="this.closest('.pp-overlay').remove()"
+        style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);">×</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px;padding:10px 14px;background:var(--surface2);border-radius:8px;">
+      💡 홈택스 → 전자세금계산서 → 건별발급에서 각 항목에 복사해서 붙여넣으세요
+    </div>
+    ${notDone.map((e,i)=>{
+      const its=e.items||[];
+      return \`
+      <div style="border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;">
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:10px;">
+          <span style="background:var(--accent);color:white;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">\${i+1}</span>
+          \${e.buyer_name}
+          <span style="font-size:12px;font-weight:400;color:var(--muted);">\${e.issue_date||''} · \${e.receipt==='01'?'영수':'청구'}</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--orange);letter-spacing:1px;margin-bottom:10px;font-weight:600;">공급받는자</div>
+            \${field('사업자/고유번호', e.buyer_reg)}
+            \${field('상호/기관명', e.buyer_name)}
+            \${field('대표자', e.buyer_ceo)}
+            \${field('주소', e.buyer_addr)}
+            \${field('업태', e.buyer_biz)}
+            \${field('종목', e.buyer_item)}
+            \${field('이메일', e.buyer_email)}
+          </div>
+          <div>
+            <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--green);letter-spacing:1px;margin-bottom:10px;font-weight:600;">세금계산서</div>
+            \${field('작성일자', e.issue_date)}
+            \${field('공급가액', Number(e.total_supply||0).toLocaleString()+'원')}
+            \${field('세액', Number(e.total_tax||0).toLocaleString()+'원')}
+            \${field('VAT포함', Number(e.total_vat||0).toLocaleString()+'원')}
+            \${field('영수/청구', e.receipt==='01'?'영수(01)':'청구(02)')}
+            \${e.note?field('비고', e.note):''}
+          </div>
+        </div>
+
+        \${sup.reg?\`
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;margin-bottom:10px;font-weight:600;">공급자 (페이퍼팝)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 24px;">
+            <div>
+              \${field('사업자번호', sup.reg)}
+              \${field('상호', sup.name)}
+              \${field('대표자', sup.ceo)}
+            </div>
+            <div>
+              \${field('업태', sup.biz)}
+              \${field('종목', sup.item)}
+              \${field('이메일', sup.email)}
+            </div>
+          </div>
+        </div>\`:''}
+
+        \${its.length?\`
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">
+          <div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--muted);letter-spacing:1px;margin-bottom:8px;font-weight:600;">품목</div>
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead><tr style="background:var(--surface2);">
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);white-space:nowrap;">일자</th>
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);">품목명</th>
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);">규격</th>
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);">수량</th>
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);">단가</th>
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);">공급가액</th>
+                <th style="padding:6px 8px;text-align:left;font-size:10px;color:var(--muted);">세액</th>
+              </tr></thead>
+              <tbody>
+                \${its.map(it=>\`<tr>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${it.day||''}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${it.name||''}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${it.spec||''}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${it.qty||''}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${Number(it.price||0).toLocaleString()}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${Number(it.supply||0).toLocaleString()}</td>
+                  <td style="padding:5px 8px;border-bottom:1px solid var(--border);">\${Number(it.tax||0).toLocaleString()}</td>
+                </tr>\`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>\`:''}
+      </div>\`;
+    }).join('')}
+  `;
+
+  overlay.appendChild(modal);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.body.appendChild(overlay);
 }
 
 function copyText(text, btn){
